@@ -8,6 +8,7 @@ AppSec Sidecar is a TypeScript VS Code extension scaffold with starter workflows
 - Call the GitHub API as the authenticated user and show rate-limit status.
 - Store Postgres connection details in VS Code SecretStorage.
 - Run a read-only Postgres health check with `SELECT now() AS now`.
+- View CodeQL and Dependabot vulnerability findings for a repository from Postgres.
 
 ## Commands
 
@@ -15,6 +16,8 @@ AppSec Sidecar is a TypeScript VS Code extension scaffold with starter workflows
 - `AppSec Sidecar: Check GitHub API`
 - `AppSec Sidecar: Configure Postgres`
 - `AppSec Sidecar: Check Postgres`
+- `AppSec Sidecar: View Repo Inventory`
+- `AppSec Sidecar: Repo Vuln Findings`
 - `AppSec Sidecar: Clear Stored Credentials`
 
 ## Development
