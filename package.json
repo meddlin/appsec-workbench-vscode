@@ -17,6 +17,7 @@
     "onCommand:appsecSidecar.checkGitHubApi",
     "onCommand:appsecSidecar.configurePostgres",
     "onCommand:appsecSidecar.checkPostgres",
+    "onCommand:appsecSidecar.viewRepoInventory",
     "onCommand:appsecSidecar.clearStoredCredentials"
   ],
   "main": "./out/extension.js",
@@ -40,6 +41,11 @@
       {
         "command": "appsecSidecar.checkPostgres",
         "title": "Check Postgres",
+        "category": "AppSec Sidecar"
+      },
+      {
+        "command": "appsecSidecar.viewRepoInventory",
+        "title": "View Repo Inventory",
         "category": "AppSec Sidecar"
       },
       {

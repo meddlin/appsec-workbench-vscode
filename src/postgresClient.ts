@@ -7,6 +7,11 @@ const { Pool } = pg;
 
 export type PostgresPool = pg.Pool;
 
+export interface RepoInventory {
+  columns: string[];
+  rows: Record<string, unknown>[];
+}
+
 export function createPostgresPool(config: PostgresSecretConfig): PostgresPool {
   const poolConfig: PoolConfig = {
     connectionString: config.connectionString
@@ -32,4 +37,23 @@ export async function checkPostgres(pool: PostgresPool): Promise<Date | string> 
   }
 
   return row.now;
+}
+
+export async function getRepoInventory(pool: PostgresPool): Promise<RepoInventory> {
+  const result = await pool.query<Record<string, unknown>>(
+    `select
+  r."fullName",
+  r."visibility",
+  r."defaultBranch",
+  r."primaryLanguage",
+  r."archived",
+  r."updatedAt"
+from "Repository" r
+order by r."fullName";`
+  );
+
+  return {
+    columns: result.fields.map((field) => field.name),
+    rows: result.rows
+  };
 }

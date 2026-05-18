@@ -15,6 +15,7 @@ AppSec Sidecar is a TypeScript VS Code extension scaffold with starter workflows
 - `AppSec Sidecar: Check GitHub API`
 - `AppSec Sidecar: Configure Postgres`
 - `AppSec Sidecar: Check Postgres`
+- `AppSec Sidecar: View Repo Inventory`
 - `AppSec Sidecar: Clear Stored Credentials`
 
 ## Development
