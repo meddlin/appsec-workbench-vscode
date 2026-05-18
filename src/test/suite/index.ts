@@ -8,6 +8,7 @@ const expectedCommands = [
   'appsecSidecar.configurePostgres',
   'appsecSidecar.checkPostgres',
   'appsecSidecar.viewRepoInventory',
+  'appsecSidecar.repoVulnFindings',
   'appsecSidecar.clearStoredCredentials'
 ];
 
