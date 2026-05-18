@@ -1,0 +1,73 @@
+{
+  "name": "appsec-sidecar-vscode",
+  "displayName": "AppSec Sidecar",
+  "description": "VS Code extension scaffold with GitHub API and Postgres health checks.",
+  "version": "0.0.1",
+  "publisher": "your-publisher-id",
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:appsecSidecar.configureGitHubPat",
+    "onCommand:appsecSidecar.checkGitHubApi",
+    "onCommand:appsecSidecar.configurePostgres",
+    "onCommand:appsecSidecar.checkPostgres",
+    "onCommand:appsecSidecar.clearStoredCredentials"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "appsecSidecar.configureGitHubPat",
+        "title": "Configure GitHub PAT",
+        "category": "AppSec Sidecar"
+      },
+      {
+        "command": "appsecSidecar.checkGitHubApi",
+        "title": "Check GitHub API",
+        "category": "AppSec Sidecar"
+      },
+      {
+        "command": "appsecSidecar.configurePostgres",
+        "title": "Configure Postgres",
+        "category": "AppSec Sidecar"
+      },
+      {
+        "command": "appsecSidecar.checkPostgres",
+        "title": "Check Postgres",
+        "category": "AppSec Sidecar"
+      },
+      {
+        "command": "appsecSidecar.clearStoredCredentials",
+        "title": "Clear Stored Credentials",
+        "category": "AppSec Sidecar"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "npm run compile && node ./out/test/runTest.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
+    "@types/pg": "^8.11.14",
+    "@types/vscode": "1.100.0",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0"
+  }
+}
