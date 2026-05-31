@@ -7,14 +7,27 @@ import {
   createPostgresPool,
   getRepoInventory,
   getRepoVulnFindings,
-  type CodeQlFinding,
-  type DependabotFinding,
   type RepoInventory,
   type RepoVulnFindings,
   type PostgresPool
 } from './postgresClient.js';
 
 let postgresPool: PostgresPool | undefined;
+
+type WebviewPayload =
+  | {
+      view: 'repoInventory';
+      inventory: RepoInventory;
+    }
+  | {
+      view: 'repoVulnFindings';
+      findings: RepoVulnFindings;
+    };
+
+interface OpenExternalMessage {
+  type: 'openExternal';
+  url: string;
+}
 
 export function activate(context: vscode.ExtensionContext): void {
   const credentials = new CredentialsStore(context.secrets);
@@ -74,7 +87,7 @@ export function activate(context: vscode.ExtensionContext): void {
           postgresPool = createPostgresPool(config);
 
           const inventory = await getRepoInventory(postgresPool);
-          showRepoInventory(inventory);
+          showRepoInventory(context, inventory);
         } catch (error) {
           await disposePostgresPool();
           throw error;
@@ -96,7 +109,7 @@ export function activate(context: vscode.ExtensionContext): void {
           postgresPool = createPostgresPool(config);
 
           const findings = await getRepoVulnFindings(postgresPool, fullName);
-          showRepoVulnFindings(findings);
+          showRepoVulnFindings(context, findings);
         } catch (error) {
           await disposePostgresPool();
           throw error;
@@ -174,320 +187,132 @@ async function promptForRepoFullName(): Promise<string | undefined> {
   return fullName?.trim();
 }
 
-function showRepoInventory(inventory: RepoInventory): void {
+function showRepoInventory(context: vscode.ExtensionContext, inventory: RepoInventory): void {
   const panel = vscode.window.createWebviewPanel(
     'appsecSidecar.repoInventory',
     'Repo Inventory',
     vscode.ViewColumn.Active,
     {
-      enableScripts: false
+      enableScripts: true,
+      localResourceRoots: [getWebviewRoot(context)]
     }
   );
 
-  panel.webview.html = renderRepoInventoryHtml(inventory);
+  attachWebviewMessageHandlers(context, panel);
+  panel.webview.html = renderWebviewHtml(context, panel.webview, 'Repo Inventory', {
+    view: 'repoInventory',
+    inventory
+  });
 }
 
-function showRepoVulnFindings(findings: RepoVulnFindings): void {
+function showRepoVulnFindings(context: vscode.ExtensionContext, findings: RepoVulnFindings): void {
   const panel = vscode.window.createWebviewPanel(
     'appsecSidecar.repoVulnFindings',
     `Repo Vuln Findings: ${findings.fullName}`,
     vscode.ViewColumn.Active,
     {
-      enableScripts: false
+      enableScripts: true,
+      localResourceRoots: [getWebviewRoot(context)]
     }
   );
 
-  panel.webview.html = renderRepoVulnFindingsHtml(findings);
+  attachWebviewMessageHandlers(context, panel);
+  panel.webview.html = renderWebviewHtml(context, panel.webview, 'Repo Vuln Findings', {
+    view: 'repoVulnFindings',
+    findings
+  });
 }
 
-function renderRepoInventoryHtml(inventory: RepoInventory): string {
-  const headerCells = inventory.columns.map((column) => `<th>${escapeHtml(column)}</th>`).join('');
-  const bodyRows = inventory.rows
-    .map((row) => {
-      const cells = inventory.columns
-        .map((column) => `<td>${escapeHtml(formatCellValue(row[column]))}</td>`)
-        .join('');
-
-      return `<tr>${cells}</tr>`;
-    })
-    .join('');
-
-  const content =
-    inventory.rows.length === 0
-      ? '<p class="empty-state">No repositories found in the Postgres inventory.</p>'
-      : `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+function renderWebviewHtml(
+  context: vscode.ExtensionContext,
+  webview: vscode.Webview,
+  title: string,
+  payload: WebviewPayload
+): string {
+  const nonce = getNonce();
+  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(getWebviewRoot(context), 'assets', 'webview.js'));
+  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(getWebviewRoot(context), 'assets', 'webview.css'));
+  const initialState = serializeWebviewState(payload);
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https: data:; font-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repo Inventory</title>
-  <style>
-    body {
-      color: var(--vscode-foreground);
-      background: var(--vscode-editor-background);
-      font-family: var(--vscode-font-family);
-      font-size: var(--vscode-font-size);
-      padding: 24px;
-    }
-
-    h1 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 0 0 16px;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th,
-    td {
-      border: 1px solid var(--vscode-panel-border);
-      padding: 8px 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: var(--vscode-editorWidget-background);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:nth-child(even) td {
-      background: var(--vscode-list-hoverBackground);
-    }
-
-    .empty-state {
-      color: var(--vscode-descriptionForeground);
-      margin: 0;
-    }
-  </style>
+  <title>${escapeHtml(title)}</title>
+  <link rel="stylesheet" href="${escapeHtml(styleUri.toString())}">
 </head>
 <body>
-  <h1>Repo Inventory</h1>
-  ${content}
+  <div id="root"></div>
+  <script nonce="${nonce}">window.__APPSEC_SIDECAR_INITIAL_STATE__ = ${initialState};</script>
+  <script nonce="${nonce}" type="module" src="${escapeHtml(scriptUri.toString())}"></script>
 </body>
 </html>`;
 }
 
-function renderRepoVulnFindingsHtml(findings: RepoVulnFindings): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline';">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repo Vuln Findings</title>
-  <style>
-    body {
-      color: var(--vscode-foreground);
-      background: var(--vscode-editor-background);
-      font-family: var(--vscode-font-family);
-      font-size: var(--vscode-font-size);
-      padding: 24px;
-    }
-
-    h1 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 0 0 4px;
-    }
-
-    h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 24px 0 10px;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    a {
-      color: var(--vscode-textLink-foreground);
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-
-    th,
-    td {
-      border: 1px solid var(--vscode-panel-border);
-      padding: 8px 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: var(--vscode-editorWidget-background);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:nth-child(even) td {
-      background: var(--vscode-list-hoverBackground);
-    }
-
-    details {
-      margin-top: 24px;
-    }
-
-    summary {
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .repo-name,
-    .empty-state {
-      color: var(--vscode-descriptionForeground);
-    }
-  </style>
-</head>
-<body>
-  <h1>Repo Vuln Findings</h1>
-  <p class="repo-name">${escapeHtml(findings.fullName)}</p>
-  ${renderFindingsSection('CodeQL Open Findings', renderCodeQlTable(findings.codeqlOpen), findings.codeqlOpen.length)}
-  ${renderFindingsSection(
-    'Dependabot Open Findings',
-    renderDependabotTable(findings.dependabotOpen),
-    findings.dependabotOpen.length
-  )}
-  ${renderCollapsedFindingsSection(
-    'CodeQL Dismissed Findings',
-    renderCodeQlTable(findings.codeqlDismissed),
-    findings.codeqlDismissed.length
-  )}
-  ${renderCollapsedFindingsSection(
-    'Dependabot Dismissed Findings',
-    renderDependabotTable(findings.dependabotDismissed),
-    findings.dependabotDismissed.length
-  )}
-</body>
-</html>`;
+function getWebviewRoot(context: vscode.ExtensionContext): vscode.Uri {
+  return vscode.Uri.joinPath(context.extensionUri, 'media', 'webview');
 }
 
-function renderFindingsSection(title: string, tableHtml: string, rowCount: number): string {
-  return `<section>
-    <h2>${escapeHtml(title)} (${rowCount})</h2>
-    ${rowCount === 0 ? '<p class="empty-state">No findings found.</p>' : tableHtml}
-  </section>`;
-}
+function attachWebviewMessageHandlers(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): void {
+  const disposable = panel.webview.onDidReceiveMessage((message: unknown) =>
+    runCommand(async () => {
+      if (!isOpenExternalMessage(message)) {
+        return;
+      }
 
-function renderCollapsedFindingsSection(title: string, tableHtml: string, rowCount: number): string {
-  return `<details>
-    <summary>${escapeHtml(title)} (${rowCount})</summary>
-    ${rowCount === 0 ? '<p class="empty-state">No findings found.</p>' : tableHtml}
-  </details>`;
-}
+      const uri = vscode.Uri.parse(message.url, true);
 
-function renderCodeQlTable(findings: CodeQlFinding[]): string {
-  return renderTable(
-    ['Number', 'Severity', 'Rule', 'Description', 'Location', 'Message', 'Updated', 'Link'],
-    findings.map((finding) => [
-      escapeHtml(String(finding.githubNumber)),
-      escapeHtml(finding.severity || finding.githubRuleSeverity || ''),
-      escapeHtml(formatRule(finding.ruleId, finding.ruleName)),
-      escapeHtml(finding.ruleDescription || ''),
-      formatLocation(finding.path, finding.startLine, finding.endLine),
-      escapeHtml(finding.message || ''),
-      formatNullableTimestamp(finding.githubUpdatedAt),
-      renderLink(finding.htmlUrl)
-    ])
-  );
-}
+      if (uri.scheme !== 'https') {
+        vscode.window.showWarningMessage('AppSec Sidecar blocked a non-HTTPS external link.');
+        return;
+      }
 
-function renderDependabotTable(findings: DependabotFinding[]): string {
-  return renderTable(
-    ['Number', 'Severity', 'Package', 'Ecosystem', 'Manifest', 'Vulnerable Range', 'Patched Versions', 'Advisory', 'Updated', 'Link'],
-    findings.map((finding) => [
-      escapeHtml(String(finding.githubNumber)),
-      escapeHtml(finding.severity || ''),
-      escapeHtml(finding.packageName || ''),
-      escapeHtml(finding.ecosystem || ''),
-      escapeHtml(finding.manifestPath || ''),
-      escapeHtml(finding.vulnerableVersionRange || ''),
-      escapeHtml(finding.patchedVersions || ''),
-      escapeHtml(finding.advisorySummary || ''),
-      formatNullableTimestamp(finding.githubUpdatedAt),
-      renderLink(finding.htmlUrl)
-    ])
-  );
-}
-
-function renderTable(headers: string[], rows: string[][]): string {
-  const headerCells = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('');
-  const bodyRows = rows
-    .map((row) => {
-      const cells = row.map((cell) => `<td>${cell}</td>`).join('');
-
-      return `<tr>${cells}</tr>`;
+      await vscode.env.openExternal(uri);
     })
-    .join('');
+  );
 
-  return `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`;
+  panel.onDidDispose(disposable.dispose, disposable, context.subscriptions);
 }
 
-function formatRule(ruleId: string | null, ruleName: string | null): string {
-  const parts = [ruleId, ruleName].filter((part): part is string => Boolean(part));
+function isOpenExternalMessage(message: unknown): message is OpenExternalMessage {
+  if (!message || typeof message !== 'object') {
+    return false;
+  }
 
-  return parts.join(' - ');
+  const candidate = message as Partial<OpenExternalMessage>;
+  return candidate.type === 'openExternal' && typeof candidate.url === 'string';
 }
 
-function formatLocation(path: string | null, startLine: number | null, endLine: number | null): string {
-  if (!path) {
-    return '';
-  }
-
-  if (!startLine) {
-    return escapeHtml(path);
-  }
-
-  const lineRange = endLine && endLine !== startLine ? `${startLine}-${endLine}` : String(startLine);
-
-  return `${escapeHtml(path)}:${escapeHtml(lineRange)}`;
+function serializeWebviewState(payload: WebviewPayload): string {
+  return JSON.stringify(payload).replace(/[<>&\u2028\u2029]/g, (character) => {
+    switch (character) {
+      case '<':
+        return '\\u003C';
+      case '>':
+        return '\\u003E';
+      case '&':
+        return '\\u0026';
+      case '\u2028':
+        return '\\u2028';
+      case '\u2029':
+        return '\\u2029';
+      default:
+        return character;
+    }
+  });
 }
 
-function formatNullableTimestamp(value: Date | string | null): string {
-  if (!value) {
-    return '';
+function getNonce(): string {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let text = '';
+
+  for (let index = 0; index < 32; index += 1) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
 
-  return escapeHtml(formatTimestamp(value));
-}
-
-function renderLink(url: string | null): string {
-  if (!url) {
-    return '';
-  }
-
-  return `<a href="${escapeHtml(url)}">Open</a>`;
-}
-
-function formatCellValue(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  if (value instanceof Date) {
-    return value.toISOString();
-  }
-
-  if (typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-
-  return String(value);
+  return text;
 }
 
 function escapeHtml(value: string): string {

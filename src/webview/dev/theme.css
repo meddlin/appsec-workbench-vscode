@@ -1,0 +1,73 @@
+:root {
+  --vscode-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --vscode-font-size: 13px;
+  --vscode-focusBorder: #007fd4;
+  --vscode-inputValidation-errorBorder: #be1100;
+  --vscode-inputValidation-warningBorder: #b89500;
+}
+
+:root[data-theme="dark"] {
+  --vscode-foreground: #cccccc;
+  --vscode-editor-background: #1e1e1e;
+  --vscode-editorWidget-background: #252526;
+  --vscode-panel-border: #3c3c3c;
+  --vscode-list-hoverBackground: #2a2d2e;
+  --vscode-toolbar-hoverBackground: #2a2d2e;
+  --vscode-descriptionForeground: #9d9d9d;
+  --vscode-textLink-foreground: #4daafc;
+  --vscode-button-background: #0e639c;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #1177bb;
+  --vscode-button-border: #0e639c;
+  --vscode-badge-background: #4d4d4d;
+  --vscode-badge-foreground: #ffffff;
+  --vscode-inputValidation-errorBackground: #5a1d1d;
+  --vscode-inputValidation-warningBackground: #352a05;
+}
+
+:root[data-theme="light"] {
+  --vscode-foreground: #1f1f1f;
+  --vscode-editor-background: #ffffff;
+  --vscode-editorWidget-background: #f3f3f3;
+  --vscode-panel-border: #d0d0d0;
+  --vscode-list-hoverBackground: #f0f0f0;
+  --vscode-toolbar-hoverBackground: #e8e8e8;
+  --vscode-descriptionForeground: #616161;
+  --vscode-textLink-foreground: #006ab1;
+  --vscode-button-background: #007acc;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-hoverBackground: #0062a3;
+  --vscode-button-border: #007acc;
+  --vscode-badge-background: #c4c4c4;
+  --vscode-badge-foreground: #333333;
+  --vscode-inputValidation-errorBackground: #f2dede;
+  --vscode-inputValidation-warningBackground: #fff4ce;
+}
+
+.dev-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-editorWidget-background);
+  padding: 8px 12px;
+}
+
+.dev-toolbar a {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 6px;
+  color: var(--vscode-textLink-foreground);
+  padding: 4px 8px;
+  text-decoration: none;
+}
+
+.dev-toolbar a:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.dev-spacer {
+  flex: 1;
+}
