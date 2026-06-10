@@ -1,0 +1,53 @@
+name: Opengrep
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: opengrep-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: OpenGrep SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install OpenGrep
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/opengrep" --version
+
+      - name: Run OpenGrep
+        run: |
+          set -euo pipefail
+          opengrep scan \
+            --config p/security-audit \
+            --config p/owasp-top-ten \
+            --config p/cwe-top-25 \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/nodejs \
+            --config p/secrets \
+            --error \
+            --metrics off \
+            --timeout 120 \
+            --max-target-bytes 1500000 \
+            --exclude node_modules \
+            --exclude out \
+            --exclude dist \
+            --exclude coverage \
+            --exclude media/webview/assets \
+            .
