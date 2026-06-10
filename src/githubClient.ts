@@ -10,7 +10,7 @@ export interface GitHubHealthResult {
 export function createGitHubClient(token: string): Octokit {
   return new Octokit({
     auth: token,
-    userAgent: 'appsec-sidecar-vscode'
+    userAgent: 'appsec-workbench-vscode'
   });
 }
 

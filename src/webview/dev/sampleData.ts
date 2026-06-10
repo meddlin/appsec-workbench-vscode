@@ -6,7 +6,7 @@ export const inventoryPayload: WebviewPayload = {
     columns: ['fullName', 'visibility', 'defaultBranch', 'primaryLanguage', 'archived', 'updatedAt', 'topics'],
     rows: [
       {
-        fullName: 'appsec/sidecar-api',
+        fullName: 'appsec/workbench-api',
         visibility: 'private',
         defaultBranch: 'main',
         primaryLanguage: 'TypeScript',

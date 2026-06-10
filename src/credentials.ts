@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
 const secretKeys = {
-  githubPat: 'appsecSidecar.githubPat',
-  postgresConnectionString: 'appsecSidecar.postgresConnectionString',
-  postgresUser: 'appsecSidecar.postgresUser',
-  postgresPassword: 'appsecSidecar.postgresPassword'
+  githubPat: 'appsecWorkbench.githubPat',
+  postgresConnectionString: 'appsecWorkbench.postgresConnectionString',
+  postgresUser: 'appsecWorkbench.postgresUser',
+  postgresPassword: 'appsecWorkbench.postgresPassword'
 } as const;
 
 export interface PostgresSecretConfig {
@@ -45,7 +45,7 @@ export class CredentialsStore {
     const pat = await this.secrets.get(secretKeys.githubPat);
 
     if (!pat) {
-      throw new MissingCredentialError('GitHub PAT is not configured. Run "AppSec Sidecar: Configure GitHub PAT" first.');
+      throw new MissingCredentialError('GitHub PAT is not configured. Run "AppSec Workbench: Configure GitHub PAT" first.');
     }
 
     return pat;
@@ -96,7 +96,7 @@ export class CredentialsStore {
     const connectionString = await this.secrets.get(secretKeys.postgresConnectionString);
 
     if (!connectionString) {
-      throw new MissingCredentialError('Postgres is not configured. Run "AppSec Sidecar: Configure Postgres" first.');
+      throw new MissingCredentialError('Postgres is not configured. Run "AppSec Workbench: Configure Postgres" first.');
     }
 
     const user = await this.secrets.get(secretKeys.postgresUser);

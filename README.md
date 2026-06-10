@@ -1,6 +1,6 @@
-# AppSec Sidecar
+# AppSec Workbench
 
-AppSec Sidecar is a TypeScript VS Code extension scaffold with starter workflows
+AppSec Workbench is a TypeScript VS Code extension scaffold with starter workflows
 for calling the GitHub API and checking connectivity to a Postgres database.
 
 ## Features
@@ -13,13 +13,13 @@ for calling the GitHub API and checking connectivity to a Postgres database.
 
 ## Commands
 
-- `AppSec Sidecar: Configure GitHub PAT`
-- `AppSec Sidecar: Check GitHub API`
-- `AppSec Sidecar: Configure Postgres`
-- `AppSec Sidecar: Check Postgres`
-- `AppSec Sidecar: View Repo Inventory`
-- `AppSec Sidecar: Repo Vuln Findings`
-- `AppSec Sidecar: Clear Stored Credentials`
+- `AppSec Workbench: Configure GitHub PAT`
+- `AppSec Workbench: Check GitHub API`
+- `AppSec Workbench: Configure Postgres`
+- `AppSec Workbench: Check Postgres`
+- `AppSec Workbench: View Repo Inventory`
+- `AppSec Workbench: Repo Vuln Findings`
+- `AppSec Workbench: Clear Stored Credentials`
 
 ## Development
 
@@ -108,7 +108,7 @@ debug configuration.
 
 This scaffold stores the GitHub PAT, Postgres connection string, optional
 Postgres username, and optional Postgres password in VS Code SecretStorage.
-Secrets are scoped to this extension and can be removed with `AppSec Sidecar:
+Secrets are scoped to this extension and can be removed with `AppSec Workbench:
 Clear Stored Credentials`.
 
 The Postgres configuration command accepts a full connection string plus

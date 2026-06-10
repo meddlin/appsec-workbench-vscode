@@ -11,8 +11,8 @@ import { openExternal } from './vscode';
 export function App({ payload }: { payload?: WebviewPayload }): React.JSX.Element {
   if (!payload) {
     return (
-      <Shell title="AppSec Sidecar">
-        <EmptyState title="No panel data" description="The webview opened without an AppSec Sidecar payload." />
+      <Shell title="AppSec Workbench">
+        <EmptyState title="No panel data" description="The webview opened without an AppSec Workbench payload." />
       </Shell>
     );
   }

@@ -1,6 +1,6 @@
 {
-  "name": "appsec-sidecar-vscode",
-  "displayName": "AppSec Sidecar",
+  "name": "appsec-workbench-vscode",
+  "displayName": "AppSec Workbench",
   "description": "VS Code extension scaffold with GitHub API and Postgres health checks.",
   "version": "0.0.1",
   "publisher": "your-publisher-id",
@@ -13,51 +13,51 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:appsecSidecar.configureGitHubPat",
-    "onCommand:appsecSidecar.checkGitHubApi",
-    "onCommand:appsecSidecar.configurePostgres",
-    "onCommand:appsecSidecar.checkPostgres",
-    "onCommand:appsecSidecar.viewRepoInventory",
-    "onCommand:appsecSidecar.repoVulnFindings",
-    "onCommand:appsecSidecar.clearStoredCredentials"
+    "onCommand:appsecWorkbench.configureGitHubPat",
+    "onCommand:appsecWorkbench.checkGitHubApi",
+    "onCommand:appsecWorkbench.configurePostgres",
+    "onCommand:appsecWorkbench.checkPostgres",
+    "onCommand:appsecWorkbench.viewRepoInventory",
+    "onCommand:appsecWorkbench.repoVulnFindings",
+    "onCommand:appsecWorkbench.clearStoredCredentials"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "appsecSidecar.configureGitHubPat",
+        "command": "appsecWorkbench.configureGitHubPat",
         "title": "Configure GitHub PAT",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.checkGitHubApi",
+        "command": "appsecWorkbench.checkGitHubApi",
         "title": "Check GitHub API",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.configurePostgres",
+        "command": "appsecWorkbench.configurePostgres",
         "title": "Configure Postgres",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.checkPostgres",
+        "command": "appsecWorkbench.checkPostgres",
         "title": "Check Postgres",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.viewRepoInventory",
+        "command": "appsecWorkbench.viewRepoInventory",
         "title": "View Repo Inventory",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.repoVulnFindings",
+        "command": "appsecWorkbench.repoVulnFindings",
         "title": "Repo Vuln Findings",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       },
       {
-        "command": "appsecSidecar.clearStoredCredentials",
+        "command": "appsecWorkbench.clearStoredCredentials",
         "title": "Clear Stored Credentials",
-        "category": "AppSec Sidecar"
+        "category": "AppSec Workbench"
       }
     ]
   },

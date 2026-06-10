@@ -32,97 +32,104 @@ interface OpenExternalMessage {
 export function activate(context: vscode.ExtensionContext): void {
   const credentials = new CredentialsStore(context.secrets);
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('appsecSidecar.configureGitHubPat', () =>
-      runCommand(async () => {
-        const stored = await credentials.configureGitHubPat();
+  const configureGitHubPat = (): Promise<void> =>
+    runCommand(async () => {
+      const stored = await credentials.configureGitHubPat();
 
-        if (stored) {
-          vscode.window.showInformationMessage('GitHub PAT stored for AppSec Sidecar.');
-        }
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.checkGitHubApi', () =>
-      runCommand(async () => {
-        const token = await credentials.getGitHubPat();
-        const result = await checkGitHubApi(token);
+      if (stored) {
+        vscode.window.showInformationMessage('GitHub PAT stored for AppSec Workbench.');
+      }
+    });
 
-        vscode.window.showInformationMessage(
-          `GitHub API OK for ${result.login}. Core rate limit: ${result.rateLimitRemaining}/${result.rateLimit}, resets ${result.rateLimitReset.toLocaleString()}.`
-        );
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.configurePostgres', () =>
-      runCommand(async () => {
-        const stored = await credentials.configurePostgres();
+  const checkGitHubApiCommand = (): Promise<void> =>
+    runCommand(async () => {
+      const token = await credentials.getGitHubPat();
+      const result = await checkGitHubApi(token);
 
-        if (stored) {
-          await disposePostgresPool();
-          vscode.window.showInformationMessage('Postgres credentials stored for AppSec Sidecar.');
-        }
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.checkPostgres', () =>
-      runCommand(async () => {
-        const config = await credentials.getPostgresConfig();
+      vscode.window.showInformationMessage(
+        `GitHub API OK for ${result.login}. Core rate limit: ${result.rateLimitRemaining}/${result.rateLimit}, resets ${result.rateLimitReset.toLocaleString()}.`
+      );
+    });
 
-        try {
-          await disposePostgresPool();
-          postgresPool = createPostgresPool(config);
+  const configurePostgres = (): Promise<void> =>
+    runCommand(async () => {
+      const stored = await credentials.configurePostgres();
 
-          const now = await checkPostgres(postgresPool);
-          vscode.window.showInformationMessage(`Postgres OK. SELECT now() returned ${formatTimestamp(now)}.`);
-        } catch (error) {
-          await disposePostgresPool();
-          throw error;
-        }
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.viewRepoInventory', () =>
-      runCommand(async () => {
-        const config = await credentials.getPostgresConfig();
-
-        try {
-          await disposePostgresPool();
-          postgresPool = createPostgresPool(config);
-
-          const inventory = await getRepoInventory(postgresPool);
-          showRepoInventory(context, inventory);
-        } catch (error) {
-          await disposePostgresPool();
-          throw error;
-        }
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.repoVulnFindings', () =>
-      runCommand(async () => {
-        const fullName = await promptForRepoFullName();
-
-        if (!fullName) {
-          return;
-        }
-
-        const config = await credentials.getPostgresConfig();
-
-        try {
-          await disposePostgresPool();
-          postgresPool = createPostgresPool(config);
-
-          const findings = await getRepoVulnFindings(postgresPool, fullName);
-          showRepoVulnFindings(context, findings);
-        } catch (error) {
-          await disposePostgresPool();
-          throw error;
-        }
-      })
-    ),
-    vscode.commands.registerCommand('appsecSidecar.clearStoredCredentials', () =>
-      runCommand(async () => {
-        await credentials.clearAll();
+      if (stored) {
         await disposePostgresPool();
-        vscode.window.showInformationMessage('Stored AppSec Sidecar credentials cleared.');
-      })
-    )
+        vscode.window.showInformationMessage('Postgres credentials stored for AppSec Workbench.');
+      }
+    });
+
+  const checkPostgresCommand = (): Promise<void> =>
+    runCommand(async () => {
+      const config = await credentials.getPostgresConfig();
+
+      try {
+        await disposePostgresPool();
+        postgresPool = createPostgresPool(config);
+
+        const now = await checkPostgres(postgresPool);
+        vscode.window.showInformationMessage(`Postgres OK. SELECT now() returned ${formatTimestamp(now)}.`);
+      } catch (error) {
+        await disposePostgresPool();
+        throw error;
+      }
+    });
+
+  const viewRepoInventory = (): Promise<void> =>
+    runCommand(async () => {
+      const config = await credentials.getPostgresConfig();
+
+      try {
+        await disposePostgresPool();
+        postgresPool = createPostgresPool(config);
+
+        const inventory = await getRepoInventory(postgresPool);
+        showRepoInventory(context, inventory);
+      } catch (error) {
+        await disposePostgresPool();
+        throw error;
+      }
+    });
+
+  const repoVulnFindings = (): Promise<void> =>
+    runCommand(async () => {
+      const fullName = await promptForRepoFullName();
+
+      if (!fullName) {
+        return;
+      }
+
+      const config = await credentials.getPostgresConfig();
+
+      try {
+        await disposePostgresPool();
+        postgresPool = createPostgresPool(config);
+
+        const findings = await getRepoVulnFindings(postgresPool, fullName);
+        showRepoVulnFindings(context, findings);
+      } catch (error) {
+        await disposePostgresPool();
+        throw error;
+      }
+    });
+
+  const clearStoredCredentials = (): Promise<void> =>
+    runCommand(async () => {
+      await credentials.clearAll();
+      await disposePostgresPool();
+      vscode.window.showInformationMessage('Stored AppSec Workbench credentials cleared.');
+    });
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('appsecWorkbench.configureGitHubPat', configureGitHubPat),
+    vscode.commands.registerCommand('appsecWorkbench.checkGitHubApi', checkGitHubApiCommand),
+    vscode.commands.registerCommand('appsecWorkbench.configurePostgres', configurePostgres),
+    vscode.commands.registerCommand('appsecWorkbench.checkPostgres', checkPostgresCommand),
+    vscode.commands.registerCommand('appsecWorkbench.viewRepoInventory', viewRepoInventory),
+    vscode.commands.registerCommand('appsecWorkbench.repoVulnFindings', repoVulnFindings),
+    vscode.commands.registerCommand('appsecWorkbench.clearStoredCredentials', clearStoredCredentials)
   );
 }
 
@@ -139,7 +146,7 @@ async function runCommand(command: () => Promise<void>): Promise<void> {
       return;
     }
 
-    vscode.window.showErrorMessage(`AppSec Sidecar command failed: ${getErrorMessage(error)}`);
+    vscode.window.showErrorMessage(`AppSec Workbench command failed: ${getErrorMessage(error)}`);
   }
 }
 
@@ -189,7 +196,7 @@ async function promptForRepoFullName(): Promise<string | undefined> {
 
 function showRepoInventory(context: vscode.ExtensionContext, inventory: RepoInventory): void {
   const panel = vscode.window.createWebviewPanel(
-    'appsecSidecar.repoInventory',
+    'appsecWorkbench.repoInventory',
     'Repo Inventory',
     vscode.ViewColumn.Active,
     {
@@ -207,7 +214,7 @@ function showRepoInventory(context: vscode.ExtensionContext, inventory: RepoInve
 
 function showRepoVulnFindings(context: vscode.ExtensionContext, findings: RepoVulnFindings): void {
   const panel = vscode.window.createWebviewPanel(
-    'appsecSidecar.repoVulnFindings',
+    'appsecWorkbench.repoVulnFindings',
     `Repo Vuln Findings: ${findings.fullName}`,
     vscode.ViewColumn.Active,
     {
@@ -245,7 +252,7 @@ function renderWebviewHtml(
 </head>
 <body>
   <div id="root"></div>
-  <script nonce="${nonce}">window.__APPSEC_SIDECAR_INITIAL_STATE__ = ${initialState};</script>
+  <script nonce="${nonce}">window.__APPSEC_WORKBENCH_INITIAL_STATE__ = ${initialState};</script>
   <script nonce="${nonce}" type="module" src="${escapeHtml(scriptUri.toString())}"></script>
 </body>
 </html>`;
@@ -265,7 +272,7 @@ function attachWebviewMessageHandlers(context: vscode.ExtensionContext, panel: v
       const uri = vscode.Uri.parse(message.url, true);
 
       if (uri.scheme !== 'https') {
-        vscode.window.showWarningMessage('AppSec Sidecar blocked a non-HTTPS external link.');
+        vscode.window.showWarningMessage('AppSec Workbench blocked a non-HTTPS external link.');
         return;
       }
 
