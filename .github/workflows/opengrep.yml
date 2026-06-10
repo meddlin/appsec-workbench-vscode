@@ -27,8 +27,8 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsSL https://raw.githubusercontent.com/opengrep/opengrep/main/install.sh | bash
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/opengrep" --version
+          echo "$HOME/.opengrep/cli/latest" >> "$GITHUB_PATH"
+          "$HOME/.opengrep/cli/latest/opengrep" --version
 
       - name: Run OpenGrep
         run: |
