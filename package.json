@@ -2,7 +2,7 @@
   "name": "appsec-workbench-vscode",
   "displayName": "AppSec Workbench",
   "description": "VS Code extension scaffold with GitHub API and Postgres health checks.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "rushinglabs",
   "license": "UNLICENSED",
   "type": "module",
