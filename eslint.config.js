@@ -1,24 +1,52 @@
+import babelParser from '@babel/eslint-parser';
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+const commonLanguageOptions = {
+  ecmaVersion: 'latest',
+  sourceType: 'module'
+};
+
+const commonRules = {
+  'no-undef': 'off',
+  'no-unused-vars': 'off'
+};
+
+export default [
   js.configs.recommended,
-  ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.ts'],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module'
-    },
-    rules: {
-      'no-undef': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_'
+      ...commonLanguageOptions,
+      parser: babelParser,
+      parserOptions: {
+        requireConfigFile: false,
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          parserOpts: {
+            plugins: ['typescript']
+          }
         }
-      ]
-    }
+      }
+    },
+    rules: commonRules
+  },
+  {
+    files: ['src/**/*.tsx'],
+    languageOptions: {
+      ...commonLanguageOptions,
+      parser: babelParser,
+      parserOptions: {
+        requireConfigFile: false,
+        babelOptions: {
+          babelrc: false,
+          configFile: false,
+          parserOpts: {
+            plugins: [['typescript', { isTSX: true }], 'jsx']
+          }
+        }
+      }
+    },
+    rules: commonRules
   }
-);
+];
