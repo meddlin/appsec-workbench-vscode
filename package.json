@@ -86,6 +86,8 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/eslint-parser": "^8.0.1",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^26.1.0",
@@ -100,8 +102,7 @@
     "eslint": "^10.6.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.0",
+    "typescript": "latest",
     "vite": "^8.0.13"
   }
 }
