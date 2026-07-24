@@ -103,6 +103,6 @@
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "latest",
-    "vite": "^8.0.13"
+    "vite": "^8.1.5"
   }
 }
