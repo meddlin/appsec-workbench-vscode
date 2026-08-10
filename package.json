@@ -79,7 +79,7 @@
     "@octokit/rest": "^22.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.28.0",
     "pg": "^8.13.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
